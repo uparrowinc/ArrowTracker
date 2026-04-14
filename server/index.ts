@@ -141,8 +141,8 @@ if (process.env.NODE_ENV !== 'test') {
     initializeDatabase();
     const server = await createApp();
     
-    // Serve on PORT env var (set to 89 in Railway), fallback to 89
-    const port = parseInt(process.env.PORT || "89", 10);
+    // Use Railway's injected PORT env var, fallback to 3000
+    const port = parseInt(process.env.PORT || "3000", 10);
     server.listen({
       port,
       host: "0.0.0.0",

@@ -18,8 +18,8 @@ RUN npm install --legacy-peer-deps
 # Build the application
 RUN npm run build
 
-# Expose port 89
-EXPOSE 89
+# Expose port (Railway injects PORT at runtime)
+EXPOSE 3000
 
 # Start the application
 CMD ["npm", "start"]
