@@ -1173,7 +1173,9 @@ Disallow: /tests/
   // Backup system routes
   app.use('/api/backup', backupRouter);
 
-  // Image generation routes removed (service not configured)
+  // Image generation routes (QR codes, blog images, social images, logo, AI images)
+  const imageRouter = await import('./image-api');
+  app.use('/api/images', imageRouter.default);
 
   // Bulk import endpoints
   app.post("/api/blog/bulk-import", isBlogAdminAuthenticated, async (req: Request, res: Response) => {

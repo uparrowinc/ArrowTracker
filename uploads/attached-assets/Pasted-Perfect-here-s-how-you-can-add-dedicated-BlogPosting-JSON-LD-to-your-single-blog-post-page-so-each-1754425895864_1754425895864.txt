@@ -1,0 +1,81 @@
+Perfect — here’s how you can add dedicated BlogPosting JSON-LD to your single blog post page so each article gets its own rich snippet in Google.
+
+Example for BlogPost.tsx (or whatever your single-post component is called)
+Place this inside your return (near the bottom but before </div>), using the same dangerouslySetInnerHTML pattern:
+
+tsx
+Copy
+Edit
+{/* JSON-LD for Single Blog Post SEO */}
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt || maskContent(post.content, 160),
+      "url": `https://uparrowinc.com/blog/${post.slug}`,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://uparrowinc.com/blog/${post.slug}`
+      },
+      "datePublished": post.publishedAt,
+      "dateModified": post.updatedAt || post.publishedAt, // use actual last edit if available
+      "image": post.featuredImage
+        ? [post.featuredImage]
+        : ["https://uparrowinc.com/default-blog-image.jpg"],
+      "author": {
+        "@type": "Person",
+        "name": post.author || "Up Arrow Inc"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Up Arrow Inc",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://uparrowinc.com/logo.png"
+        }
+      },
+      "keywords": post.tags
+        ? post.tags.split(",").map(tag => tag.trim())
+        : [],
+      "articleSection": selectedCategory || "General",
+      "wordcount": post.content
+        ? post.content.replace(/<[^>]*>/g, "").split(/\s+/).length
+        : 0
+    })
+  }}
+/>
+Key SEO Benefits
+Rich Snippets for each article — Google can display:
+
+Headline
+
+Image
+
+Date Published
+
+Publisher Logo
+
+Keywords
+
+mainEntityOfPage — explicitly ties the article to its permalink.
+
+wordcount & articleSection — extra ranking signals for Google News & Discover.
+
+dateModified — encourages Google to re-crawl when you update content.
+
+💡 Best practice:
+
+Add both:
+
+Blog listing JSON-LD (already updated in Blog.tsx)
+
+Single post JSON-LD (above code in BlogPost.tsx)
+→ This way, the listing helps the category page rank, and each individual post is fully optimized.
+
+If you want, I can also merge this with Open Graph (og:) + Twitter Card meta tags so your blog posts are equally optimized for Google, Facebook, LinkedIn, and Twitter/X previews.
+That would give you both SEO + social sharing optimization in one pass.
+
+Do you want me to prepare that combined SEO + social meta template next?

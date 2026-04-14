@@ -1,0 +1,80 @@
+Debug Index Page Issues
+
+1. Application Data Check
+
+Services Data:
+
+✓ Services array exists with 3 items
+
+eCommerce Solutions: https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+✗ File NOT found: /Applications/ColdFusionBuilder2018/ColdFusion/cfusion/wwwroot/CFTesting2018/NewUASite/https:/images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+Technology Consulting: https://images.unsplash.com/photo-1560439513-74b037a25d84?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+✗ File NOT found: /Applications/ColdFusionBuilder2018/ColdFusion/cfusion/wwwroot/CFTesting2018/NewUASite/https:/images.unsplash.com/photo-1560439513-74b037a25d84?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+AI & Automation: https://images.unsplash.com/photo-1488229297570-58520851e868?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+✗ File NOT found: /Applications/ColdFusionBuilder2018/ColdFusion/cfusion/wwwroot/CFTesting2018/NewUASite/https:/images.unsplash.com/photo-1488229297570-58520851e868?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400&q=80
+
+Testimonials Data:
+
+✓ Testimonials array exists with 3 items
+
+Sarah Johnson: https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80
+
+David Chen: https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80
+
+Amanda Rodriguez: https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80
+
+Team Data:
+
+✓ Team array exists with 1 items
+
+Michael Foster: https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80
+
+2. File System Check
+
+Current Directory: #expandPath(".")#
+
+CSS File: ✓ Found
+
+JS File: ✓ Found
+
+Images Directory: ✓ Found
+
+3. URL Test
+
+Testing image URLs directly:
+
+serve-image.cfm?image=service-ecommerce
+
+serve-image.cfm?image=service-consulting
+
+serve-image.cfm?image=service-ai
+
+4. Simple HTML Test
+
+Service Cards (Simplified):
+
+eCommerce Solutions
+eCommerce Solutions
+
+Build and optimize custom eCommerce platforms with secure payment processing, inventory management, ...
+
+Technology Consulting
+Technology Consulting
+
+Get expert guidance on technology decisions with personalized recommendations that align with your b...
+
+AI & Automation
+AI & Automation
+
+Implement custom AI solutions to streamline operations, enhance decision-making, and create more eff...
+
+5. Session & Request Info
+
+Session ID: UPARROWINCCF_44201_4bc08ff0d4924ec0-AEBAE6BF-D559-65FA-D2428D388D63BAF3
+
+Is Authenticated: Yes

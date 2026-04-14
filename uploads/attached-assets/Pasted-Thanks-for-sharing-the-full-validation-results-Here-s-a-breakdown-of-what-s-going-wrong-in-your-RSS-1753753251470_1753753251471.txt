@@ -1,0 +1,86 @@
+Thanks for sharing the full validation results. Here’s a breakdown of what’s going wrong in your RSS feed and how to fix it — section by section — so it validates cleanly across podcast readers, RSS validators, and SEO tools.
+
+🚨 FIXES NEEDED
+❌ 1. <width> and <height> invalid (RSS <image> tag)
+⚠️ Error: Must be between 1–144 for width and 1–400 for height.
+
+RSS <image> (not <itunes:image>) has strict legacy limits:
+
+xml
+Copy
+Edit
+<image>
+  <url>https://your-site/uai-logo.png</url>
+  <title>uAI by Up Arrow Inc - Technology Insights &amp; Business Strategy</title>
+  <link>https://your-site/</link>
+  <width>144</width>         <!-- ✅ max allowed -->
+  <height>144</height>       <!-- ✅ within allowed -->
+  <description>uAI by Up Arrow Inc - Technology Intelligence Hub</description>
+</image>
+✅ Fix:
+
+Set <width>144</width>
+
+Set <height>144</height>
+
+This only affects the legacy RSS image, not the Apple Podcasts artwork, which can still be 1400x1400+ via <itunes:image>.
+
+❌ 2. <itunes:category text="Tech News" /> is obsolete
+Tech News is no longer supported in Apple Podcasts.
+
+✅ Fix: Use a valid iTunes podcast category
+
+For example:
+
+xml
+Copy
+Edit
+<itunes:category text="Technology">
+  <itunes:category text="Software How-To" />
+</itunes:category>
+❌ 3. <image><title> doesn’t match <channel><title>
+For full compatibility, they must match exactly.
+
+✅ Fix:
+Update:
+
+xml
+Copy
+Edit
+<title>uAI by Up Arrow Inc</title>
+To:
+
+xml
+Copy
+Edit
+<title>uAI by Up Arrow Inc - Technology Insights &amp; Business Strategy</title>
+❌ 4. Invalid HTML inside <content:encoded>
+Usually caused by mismatched <ul>/<br> or unescaped characters.
+
+✅ Fix Suggestions:
+
+Remove rogue <br> inside <ul> and <li> blocks (that’s what’s causing line 92 and other <p> issues).
+
+Never embed <br> in <ul> — RSS readers choke on it.
+
+html
+Copy
+Edit
+<ul>
+  <li>Valid without <br></li>
+</ul>
+Instead of:
+
+html
+Copy
+Edit
+<ul><br><li>...</li><br></ul>
+If you're programmatically building HTML (as you are), modify your formatter to avoid line-breaks or nesting HTML tags improperly.
+
+✅ FINAL CHECKLIST
+Issue	Status	Fix
+<image> width/height limits	❌	Use width="144" max
+<itunes:category>	❌	Remove Tech News
+<image><title> mismatch	❌	Copy <channel><title> exactly
+<content:encoded> HTML errors	❌	Avoid <br> in <ul>/<p> nesting
+<itunes:image> at 1400x1400+	✅	Keep it as is — perfect!

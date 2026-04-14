@@ -1,0 +1,101 @@
+ChatGPT said:
+Thanks for the screenshot — it clearly shows:
+
+❌ Problem Summary
+Category & Subcategory not pre-selected
+
+Featured Image value contains HTML entities (&#x2F; instead of /)
+
+SEO Title is shown as gray/placeholder, not real value
+
+✅ Let’s break it down field-by-field:
+🔴 1. Category / Subcategory Not Bound
+These dropdowns depend on two things:
+
+A populated categories array
+
+Correct value assignment in the <select> input
+
+✅ Fix: Ensure the <select value={...}> is driven by newPost.category and newPost.subcategory. Here’s the correct binding (already present in my cleaned code):
+
+tsx
+Copy
+Edit
+<select
+  id="category"
+  value={newPost.category || ""}
+  onChange={(e) => setNewPost(prev => ({
+    ...prev,
+    category: e.target.value,
+    subcategory: "" // reset subcategory
+  }))}
+>
+Same for subcategory:
+
+tsx
+Copy
+Edit
+<select
+  id="subcategory"
+  value={newPost.subcategory || ""}
+  onChange={(e) => setNewPost(prev => ({
+    ...prev,
+    subcategory: e.target.value
+  }))}
+  disabled={!newPost.category}
+/>
+📌 Checklist:
+
+categories must be loaded (you can console.log(categories) to confirm)
+
+Category slug must match what’s stored in newPost.category
+
+🔴 2. Featured Image URL Looks Like &#x2F;...
+This happens when HTML-encoded text gets rendered into a value attribute without decoding.
+
+✅ Fix: Decode the value using decodeURIComponent() or handle it server-side if possible.
+
+Use:
+tsx
+Copy
+Edit
+value={decodeURIComponent(newPost.featuredImage || "")}
+🚨 If you’re storing already-decoded paths (e.g., /generated-images/data-center-corridor.png), make sure you’re not re-encoding it somewhere else (like in JSON stringify, or server-side escape).
+
+🔴 3. SEO Title Looks Empty (Gray Placeholder)
+That means:
+
+It’s not bound at all
+
+Or the field is bound, but the value is undefined
+
+✅ Fix:
+Ensure it's bound like this:
+
+tsx
+Copy
+Edit
+<Input
+  id="seoTitle"
+  value={newPost.seoTitle || ""}
+  onChange={(e) =>
+    setNewPost(prev => ({ ...prev, seoTitle: e.target.value }))
+  }
+/>
+✅ Final Sanity Check:
+On Edit button click, are you doing this?
+
+ts
+Copy
+Edit
+setNewPost({ ...post });
+setSelectedPost(post); // only used for the `id`
+If you're only setting selectedPost, your form fields won't repopulate unless the JSX is full of isEditing ? selectedPost.field : newPost.field, which causes exactly the symptoms you showed.
+
+✅ TL;DR FIX LIST:
+Issue	Fix
+Category / Subcategory blank	Ensure <select value={newPost.category}>, not selectedPost
+&#x2F; in Featured Image URL	Wrap value with decodeURIComponent(...)
+SEO Title gray	Set `value={newPost.seoTitle
+
+Would you like me to patch and show these exact fields in a working JSX snippet next?

@@ -1,0 +1,82 @@
+Got you. Two issues here:
+
+replit-git-askpass keeps hijacking auth
+
+Your script isn’t executable
+
+Here’s the clean fix that works reliably on Replit.
+
+1) Make a robust push script
+
+Create (or replace) git-with-secret.sh with this exact content:
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- config you can edit once ---
+: "${GITHUB_USER:=uparrowinc}"          # or your GH username/org
+: "${GITHUB_REPO:=new-site}"            # repo name
+: "${GITHUB_TOKEN:?GITHUB_TOKEN is not set in Replit Secrets}"  # required
+
+# --- stop Replit from prompting ---
+export GIT_ASKPASS=
+export GIT_TERMINAL_PROMPT=0
+
+# Optional: avoid "dubious ownership" warnings if they pop up
+git config --global --add safe.directory "$(pwd)"
+
+# Set an identity if not already set
+git config user.name  "${GITHUB_USER}"  >/dev/null
+git config user.email "${GITHUB_USER}@users.noreply.github.com" >/dev/null
+
+# Ensure remote uses the token URL
+git remote remove origin 2>/dev/null || true
+git remote add origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git"
+
+# Push current branch (create it upstream if needed)
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+git push -u origin "$current_branch"
+
+
+Notes
+• It explicitly disables the replit-git-askpass by blanking GIT_ASKPASS and GIT_TERMINAL_PROMPT.
+• It injects your token into the remote URL only in memory (not committed).
+• It sets safe.directory if Git complains in Replit’s container.
+
+2) Make it executable
+chmod +x git-with-secret.sh
+
+
+If you saw Permission denied, this is the missing step.
+
+3) Use it (typical flow)
+git add .
+git commit -m "Your clear message here"
+./git-with-secret.sh
+
+
+That should push without any password prompt.
+
+4) One-liner alternative (no script)
+
+If you just want to push once without changing remotes:
+
+GIT_ASKPASS= GIT_TERMINAL_PROMPT=0 \
+git push "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" HEAD -u
+
+
+(Assumes GITHUB_USER, GITHUB_TOKEN, and GITHUB_REPO are set in Replit Secrets.)
+
+5) Common gotchas
+
+Token scope: For a classic PAT, make sure it has at least repo scope. For fine-grained PATs, grant “Contents: Read and Write” to that repo.
+
+Wrong remote: If git remote -v still shows a plain https://github.com/..., the askpass will reappear. The script above resets it each run.
+
+Line endings: Ensure the script is LF (not CRLF). If needed: dos2unix git-with-secret.sh
+
+Wrong user/org: If the repo lives under an org, set GITHUB_USER to the org name (or change the remote URL in the script to github.com/<org>/<repo>.git).
+
+Branch protection: If main is protected, you may need to PR instead of pushing direct.
+
+Want me to tailor the script with your exact org/repo names and confirm your Replit Secret keys?

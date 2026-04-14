@@ -1,0 +1,179 @@
+Thanks for the deep context. Based on everything you shared, here are the likely causes and recommended fixes for your issues:
+
+🔧 1. Form Not Repopulating or Updating Correctly
+✅ Suspected Cause:
+You're using both selectedPost and newPost interchangeably in the form—but handleUpdatePost() sends data from selectedPost, which is not actually updated from the form inputs.
+
+✅ Fix:
+Update the form to only bind to newPost and populate newPost when editing. Then call updatePostMutation.mutate({ id: selectedPost.id, data: newPost }).
+
+🔁 Replace This (inside handleUpdatePost):
+ts
+Copy
+Edit
+const { id, createdAt, updatedAt, commentCount, readingTime, ...updateData } = selectedPost;
+updatePostMutation.mutate({ id: selectedPost.id, data: updateData });
+✅ With This:
+ts
+Copy
+Edit
+if (!selectedPost) return;
+updatePostMutation.mutate({ id: selectedPost.id, data: newPost });
+🎨 2. Featured Image Missing
+🔍 Clue:
+Your saved post had /generated-images/data-center-corridor.png, but after editing, you expected generated-ai-generated-1753741338417_1753743980692.png.
+
+✅ Fix:
+Check two things:
+
+The <ImageGenerator> component callback must actually call setNewPost or setSelectedPost and not rely on stale state.
+
+When switching tabs back from “Images” to “Create”, ensure you’re not overwriting the featuredImage.
+
+💡 Tip:
+Log newPost.featuredImage before save. Confirm your image selection isn't being lost in navigation or reset during tab switch.
+
+🏷️ 3. Categories or Meta Not Persisting
+🔍 Likely Cause:
+Some fields like category, subcategory, seoTitle, and metaDescription may never be updated into selectedPost OR are overwritten by stale state when the form is shown.
+
+✅ Fix:
+If you stick to one source of truth (preferably newPost), then always update and mutate that, regardless of whether you’re editing or creating.
+
+✅ 🔁 Recommended Refactor Strategy:
+Replace selectedPost usage with newPost throughout the form.
+
+On edit: populate newPost = { ...post } and set isEditing = true.
+
+On submit:
+
+ts
+Copy
+Edit
+if (isEditing) {
+  updatePostMutation.mutate({ id: selectedPost.id, data: newPost });
+} else {
+  createPostMutation.mutate(newPost);
+}
+✅ Bonus: Add Logging
+Before calling the mutation, add this:
+
+ts
+Copy
+Edit
+console.log("Saving post data:", newPost);
+If you want, I can send you a cleaned-up handleUpdatePost() and onEditClick() handler that only uses newPost. Let me know.
+
+
+
+
+
+
+
+You said:
+please
+
+
+ChatGPT said:
+Here’s how you should rewrite the relevant logic so your form only uses newPost (as a single source of truth), and your update logic behaves correctly:
+
+✅ 1. Edit Button Logic
+Update the onClick of your Edit button like this:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={() => {
+    console.log('✏️ Editing post:', post.id);
+    
+    setNewPost({
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      featuredImage: post.featuredImage || "",
+      audioUrl: post.audioUrl || "",
+      audioDuration: post.audioDuration || "",
+      audioTitle: post.audioTitle || "",
+      postType: post.postType || "article",
+      tags: post.tags || "",
+      category: post.category || "",
+      subcategory: post.subcategory || "",
+      metaDescription: post.metaDescription || "",
+      seoTitle: post.seoTitle || "",
+      published: post.published,
+      publishedAt: post.publishedAt,
+      scheduledFor: post.scheduledFor,
+      author: post.author || 'Up Arrow Inc',
+    });
+
+    setSelectedPost(post); // just to store the ID
+    setIsEditing(true);
+    setActiveTab("create");
+    toast({ title: "✏️ Editing Post", description: `Now editing: ${post.title}` });
+  }}
+>
+  <Edit className="w-4 h-4" />
+  <span className="ml-2 sm:hidden font-medium">✏️ Edit</span>
+</Button>
+✅ 2. Update Post Handler
+Clean and safe handleUpdatePost():
+
+ts
+Copy
+Edit
+const handleUpdatePost = () => {
+  if (!selectedPost || !newPost.title || !newPost.content) {
+    toast({ title: "Missing required fields", variant: "destructive" });
+    return;
+  }
+
+  console.log("🔄 Updating post ID", selectedPost.id, "with data:", newPost);
+
+  updatePostMutation.mutate({
+    id: selectedPost.id,
+    data: newPost,
+  });
+};
+✅ 3. Create Handler (No change unless needed)
+Already looks good:
+
+ts
+Copy
+Edit
+const handleCreatePost = () => {
+  if (!newPost.title || !newPost.content) {
+    toast({ title: "Title and content are required", variant: "destructive" });
+    return;
+  }
+  console.log("🆕 Creating post with data:", newPost);
+  createPostMutation.mutate(newPost);
+};
+✅ Optional: Reset After Submit
+After success (in onSuccess of both createPostMutation and updatePostMutation), do:
+
+ts
+Copy
+Edit
+setNewPost({
+  title: "",
+  excerpt: "",
+  content: "",
+  featuredImage: "",
+  audioUrl: "",
+  audioDuration: "",
+  audioTitle: "",
+  postType: "article",
+  tags: "",
+  category: "",
+  subcategory: "",
+  metaDescription: "",
+  seoTitle: "",
+  published: false,
+  publishedAt: null,
+  scheduledFor: null,
+  author: "Up Arrow Inc",
+});
+setIsEditing(false);
+setSelectedPost(null);

@@ -1,0 +1,107 @@
+That error means GitHub didn’t receive a valid token in the URL (or the token lacks repo perms). Let’s brute-fix it and verify each step.
+
+0) Sanity checks (paste these)
+# Make sure you’re in the repo folder
+pwd && git rev-parse --is-inside-work-tree
+
+# See what remote URL git is actually using (it looks naked in your error)
+git remote -v
+
+1) Verify your token actually works
+
+In Replit, ensure a Secret named GITHUB_TOKEN exists and is a Personal Access Token with repo:all (classic) or a fine-grained token with Contents: Read & write for uparrowinc/new-site.
+
+Now test it:
+
+# Who am I with this token?
+curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user | grep -E '"login"|message'
+
+# Do I have access to this repo?
+curl -s -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://api.github.com/repos/uparrowinc/new-site
+# Expect 200. If 404/403 -> token scopes or repo selection are wrong.
+
+2) Nuke askpass & any cached helper, then set the remote with credentials
+# Kill Replit's prompt behavior
+git config --global --unset credential.helper 2>/dev/null || true
+git config --global --add safe.directory "$(pwd)"
+export GIT_ASKPASS=
+export GIT_TERMINAL_PROMPT=0
+
+# Set your org/user and repo
+export GITHUB_USER="uparrowinc"
+export GITHUB_REPO="new-site"
+
+# IMPORTANT: set the remote URL WITH embedded creds and NO trailing slash
+git remote remove origin 2>/dev/null || true
+git remote add origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git"
+
+# Double-check it really stuck
+git remote -v
+
+
+You should now see the tokenized URL (with @github.com/...). If you still see a naked https://github.com/... URL, the previous step didn’t apply.
+
+3) Push
+git add .
+git commit -m "Push from Replit"
+git push -u origin HEAD
+
+4) If you still get “Invalid username or token”
+
+Common causes & fixes:
+
+Wrong token type/scope
+
+Classic PAT should start with ghp_ and have repo scope.
+
+Fine-grained tokens start with github_pat_... and must be explicitly granted to uparrowinc/new-site with Contents: Read and write (and Metadata: Read). Re-create if needed.
+
+Username mismatch (fine-grained PATs)
+Some environments are picky: use your actual username as the URL username. (We already do: ${GITHUB_USER}:${GITHUB_TOKEN}@....)
+
+Trailing slash
+Your error shows ...new-site.git/. Make sure there’s no trailing / in the remote URL.
+
+You ran the wrong script path
+Use ./git-with-secret.sh, not /git-with-secret.sh (leading slash = absolute path).
+
+5) (Optional) Make the script bulletproof
+
+Replace git-with-secret.sh with this v2 (note separate OWNER vs USER name in case the repo is under an org):
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${GITHUB_OWNER:=uparrowinc}"   # org or username that OWNS the repo
+: "${GITHUB_USER:=uparrowinc}"    # your GitHub login (used as the HTTPS user)
+: "${GITHUB_REPO:=new-site}"
+: "${GITHUB_TOKEN:?GITHUB_TOKEN is not set}"
+
+export GIT_ASKPASS=
+export GIT_TERMINAL_PROMPT=0
+git config --global --add safe.directory "$(pwd)"
+git config user.name  "${GITHUB_USER}"  >/dev/null
+git config user.email "${GITHUB_USER}@users.noreply.github.com" >/dev/null
+
+git remote remove origin 2>/dev/null || true
+git remote add origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"
+
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+git push -u origin "$current_branch"
+
+
+Make it executable and run:
+
+chmod +x git-with-secret.sh
+./git-with-secret.sh
+
+
+If any step fails, paste the output of:
+
+git remote -v
+
+The two curl checks’ outputs (status code and the line with "login" or "message")
+
+That will pinpoint whether it’s a token/scope issue or the remote URL not using your token.

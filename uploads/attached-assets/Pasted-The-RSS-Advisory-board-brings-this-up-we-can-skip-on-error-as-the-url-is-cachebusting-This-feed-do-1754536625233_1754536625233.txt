@@ -1,0 +1,70 @@
+The RSS Advisory board brings this up we can skip on error as the url is cachebusting
+ 
+This feed does not validate.
+
+line 31, column 26: itunes:explicit must be "yes", "no", or "clean": false [help]
+
+  ```
+   itunes:explicitfalse</itunes:explicit>
+                          ^
+text* line 33, column 6: Tech News is not one of the predefined iTunes categories or sub-categories [help]
+
+&nbsp;&nbsp;```
+      <itunes:category text="Tech News" />
+      ^
+In addition, interoperability with the widest range of feed readers could be improved by implementing the following recommendations.
+
+line 14, column 96: Self reference doesn't match document location [help]
+
+  ```
+... rel="self" type="application/rss+xml" />
+                                             ^
+text* line 32, column 4: News is an obsolete iTunes category or sub-category [help]
+
+&nbsp;&nbsp;```
+    <itunes:category text="News">
+    ^Thought for 39sThese are the last few tweaks to get your RSS feed fully compliant and recommendation-free. The category errors seem to stem from the validator using an outdated "iTunes" category list (pre-2019 changes when it rebranded to Apple Podcasts). Apple's official current categories (as of 2025) confirm "News" is a valid top-level category, and "Tech News" is a valid sub-category under it. Your nesting is correct, so the validator is likely wrong here—feeds with this setup get approved in Apple Podcasts. If the warnings bother you, we can switch to the "Technology" top-level category (no sub needed), which is also valid for your AI/tech content and avoids any potential validator quirks.
+1. Fix itunes:explicit (Line 31)
+
+Issue: Apple requires exactly "yes", "no", or "clean" (case-sensitive). "false" is invalid.
+Fix in Replit Code: Change the value in your XML generation.
+typescript// In channel XML
+xml += `<itunes:explicit>no</itunes:explicit>`;  // Or "clean" if no profanity
+
+"no" or "clean" both mean non-explicit; "clean" adds a clean label in directories.
+
+
+
+2. Fix Tech News and News Categories (Lines 32-33)
+
+Issue: Validator claims they're obsolete/invalid, but Apple's official list confirms:
+
+"News" is top-level.
+Subs under News: Business News, Daily News, Entertainment News, News Commentary, Politics, Sports News, Tech News.
+Since your content (AI/tech insights, business strategy) fits "Tech News", keep it if submitting to Apple. To silence the validator, switch to standalone "Technology" (a top-level with no subs).
+
+
+Fix in Replit Code: Option 1 (keep current, ignore validator—recommended for Apple approval):
+typescriptxml += `<itunes:category text="News">
+  <itunes:category text="Tech News" />
+</itunes:category>`;
+
+Option 2 (switch to Technology to avoid warnings):
+typescriptxml += `<itunes:category text="Technology" />`;
+
+
+
+
+3. Self Reference Doesn't Match (Line 14)
+
+Issue: As discussed, this is a non-issue from cachebusting params. The RSS Advisory Board notes it's skippable, and validators don't even probe for equivalence.
+Fix: No change needed, but for perfection, make it dynamic (includes params if present):
+typescript// In RSS handler
+const selfHref = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+xml += `<atom:link href="${selfHref}" rel="self" type="application/rss+xml" />`;
+
+Validate without params to avoid the warning.
+
+
+
+Redeploy after changes, test with plain URL in validator. Your feed should now pass cleanly—Apple will accept it regardless of the category warnings. If submitting, use their preview tool to confirm. Let me know if more issues!
