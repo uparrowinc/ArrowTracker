@@ -56,6 +56,32 @@ app.use((req, res, next) => {
   
   // Serve attached assets (for user uploaded images and audio files)
   // CRITICAL: Must be BEFORE authentication middleware to serve audio files publicly
+  // Serve BOTH /attached-assets (hyphen, used in DB audio_url) and /attached_assets (underscore)
+  const attachedAssetsOptions = {
+    setHeaders: (res: any, filePath: string) => {
+      if (filePath.endsWith('.mp3')) {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Accept-Ranges', 'bytes');
+      }
+      if (filePath.endsWith('.wav')) {
+        res.setHeader('Content-Type', 'audio/wav');
+        res.setHeader('Accept-Ranges', 'bytes');
+      }
+      if (filePath.endsWith('.mp4')) {
+        res.setHeader('Content-Type', 'audio/mp4');
+        res.setHeader('Accept-Ranges', 'bytes');
+      }
+      if (filePath.endsWith('.mp3') || filePath.endsWith('.wav') || filePath.endsWith('.mp4')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Range, Content-Range, Accept-Encoding');
+    }
+  };
+  app.use("/attached-assets", express.static("attached_assets", attachedAssetsOptions));
   app.use("/attached_assets", express.static("attached_assets", {
     setHeaders: (res, path) => {
       // Ensure proper MIME types for audio files
