@@ -66,7 +66,6 @@
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.9.0",
     "better-sqlite3-session-store": "^0.1.0",
-    "canvas": "^3.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -128,8 +127,6 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
-    "@replit/vite-plugin-cartographer": "^0.5.1",
-    "@replit/vite-plugin-runtime-error-modal": "^0.0.6",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "@types/connect-pg-simple": "^7.0.3",
