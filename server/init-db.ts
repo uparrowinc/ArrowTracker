@@ -94,9 +94,14 @@ export function initializeDatabase() {
       views INTEGER DEFAULT 0,
       read_time INTEGER DEFAULT 5,
       audio_url TEXT,
+      audio_duration TEXT,
       audio_title TEXT,
       post_type TEXT DEFAULT 'article',
-      reading_time INTEGER DEFAULT 5,
+      reading_time TEXT DEFAULT '5 min read',
+      subcategory TEXT,
+      scheduled_for INTEGER,
+      seo_title TEXT,
+      canonical_url TEXT,
       meta_title TEXT,
       meta_description TEXT,
       published_at INTEGER,
@@ -414,9 +419,14 @@ export function initializeDatabase() {
   // Run migrations to add columns that may be missing from older databases
   const migrations = [
     `ALTER TABLE blog_posts ADD COLUMN audio_url TEXT`,
+    `ALTER TABLE blog_posts ADD COLUMN audio_duration TEXT`,
     `ALTER TABLE blog_posts ADD COLUMN audio_title TEXT`,
     `ALTER TABLE blog_posts ADD COLUMN post_type TEXT DEFAULT 'article'`,
-    `ALTER TABLE blog_posts ADD COLUMN reading_time INTEGER DEFAULT 5`,
+    `ALTER TABLE blog_posts ADD COLUMN reading_time TEXT DEFAULT '5 min read'`,
+    `ALTER TABLE blog_posts ADD COLUMN subcategory TEXT`,
+    `ALTER TABLE blog_posts ADD COLUMN scheduled_for INTEGER`,
+    `ALTER TABLE blog_posts ADD COLUMN seo_title TEXT`,
+    `ALTER TABLE blog_posts ADD COLUMN canonical_url TEXT`,
   ];
   for (const migration of migrations) {
     try {

@@ -7,67 +7,81 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export function seedDatabase() {
-  // Check if already seeded
-  const catCount = sqliteDb.prepare("SELECT COUNT(*) as c FROM blog_categories").get() as any;
-  if (catCount.c > 0) {
-    console.log("✅ Database already seeded, skipping");
-    return;
-  }
-  console.log("🌱 Seeding database with initial data...");
+  console.log("🌱 Checking seed data...");
 
   try {
     const seedPath = join(__dirname, "seed-data.json");
     const seedData = JSON.parse(readFileSync(seedPath, "utf-8"));
 
-    // Insert blog categories
+    // Insert blog categories (upsert by slug)
     const insertCat = sqliteDb.prepare(
-      "INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+      `INSERT OR IGNORE INTO blog_categories (name, slug, description, color, created_at)
+       VALUES (?, ?, ?, ?, ?)`
     );
-    for (const cat of seedData.blog_categories) {
-      insertCat.run(cat.id, cat.name, cat.slug, cat.description, cat.color, cat.created_at);
+    let catCount = 0;
+    for (const cat of seedData.categories) {
+      const result = insertCat.run(
+        cat.name, cat.slug, cat.description || '', cat.color || '#3B82F6',
+        Date.now()
+      );
+      if (result.changes > 0) catCount++;
     }
-    console.log(`  ✅ Seeded ${seedData.blog_categories.length} blog categories`);
+    if (catCount > 0) console.log(`  ✅ Seeded ${catCount} blog categories`);
 
-    // Insert blog posts
+    // Insert blog posts (upsert by slug)
     const insertPost = sqliteDb.prepare(
-      `INSERT OR REPLACE INTO blog_posts 
-      (id, title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title,
-       post_type, category, subcategory, author, published, published_at, scheduled_for,
-       created_at, updated_at, tags, meta_description, reading_time)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT OR IGNORE INTO blog_posts
+       (title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title,
+        post_type, category, subcategory, author, published, published_at,
+        created_at, updated_at, tags, meta_description, reading_time, seo_title, canonical_url)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     );
-    for (const post of seedData.blog_posts) {
-      insertPost.run(
-        post.id, post.title, post.slug, post.excerpt, post.content,
-        post.featured_image, post.audio_url, post.audio_duration, post.audio_title,
-        post.post_type, post.category, post.subcategory, post.author,
-        post.published, post.published_at, post.scheduled_for,
-        post.created_at, post.updated_at, post.tags, post.meta_description, post.reading_time
+    let postCount = 0;
+    for (const post of seedData.posts) {
+      const result = insertPost.run(
+        post.title, post.slug, post.excerpt || '', post.content || '',
+        post.featured_image || '', post.audio_url || '', post.audio_duration || '',
+        post.audio_title || '', post.post_type || 'article',
+        post.category || 'general', post.subcategory || '',
+        post.author || 'Up Arrow Inc',
+        post.published ? 1 : 0,
+        post.published_at || Date.now(),
+        Date.now(), Date.now(),
+        post.tags || '', post.meta_description || '',
+        post.reading_time || '5 min read',
+        post.seo_title || '', post.canonical_url || ''
       );
+      if (result.changes > 0) postCount++;
     }
-    console.log(`  ✅ Seeded ${seedData.blog_posts.length} blog posts`);
+    if (postCount > 0) console.log(`  ✅ Seeded ${postCount} blog posts`);
 
-    // Insert members
+    // Insert members (upsert by email)
     const insertMember = sqliteDb.prepare(
-      `INSERT OR REPLACE INTO members 
-      (id, email, first_name, last_name, password, phone, company,
-       membership_tier, membership_status, is_approved,
-       has_training_access, has_ticketing_access, has_billing_access,
-       preferred_mfa_method, created_at, updated_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT OR IGNORE INTO members
+       (email, first_name, last_name, password, phone, company,
+        membership_tier, membership_status, is_approved,
+        has_training_access, has_ticketing_access, has_billing_access,
+        created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     );
+    let memberCount = 0;
     for (const member of seedData.members) {
-      insertMember.run(
-        member.id, member.email, member.first_name, member.last_name, member.password,
-        member.phone, member.company, member.membership_tier, member.membership_status,
-        member.is_approved, member.has_training_access, member.has_ticketing_access,
-        member.has_billing_access, member.preferred_mfa_method,
-        member.created_at, member.updated_at
+      const result = insertMember.run(
+        member.email, member.first_name || '', member.last_name || '',
+        member.password_hash || '', member.phone || '', member.company || '',
+        member.tier || 'free', member.status || 'active', 1,
+        1, 1, 1,
+        Date.now(), Date.now()
       );
+      if (result.changes > 0) memberCount++;
     }
-    console.log(`  ✅ Seeded ${seedData.members.length} members`);
+    if (memberCount > 0) console.log(`  ✅ Seeded ${memberCount} members`);
 
-    console.log("✅ Database seeded successfully");
+    if (catCount === 0 && postCount === 0 && memberCount === 0) {
+      console.log("✅ Database already seeded, nothing to add");
+    } else {
+      console.log("✅ Database seeded successfully");
+    }
   } catch (err) {
     console.error("⚠️ Seed failed (non-fatal):", err);
   }
