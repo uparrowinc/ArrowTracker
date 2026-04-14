@@ -1,0 +1,386 @@
+import { pgTable, text, serial, integer, boolean, varchar, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import { relations } from "drizzle-orm";
+
+// Member Users (separate from admin users)
+export const members = pgTable("members", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  password: text("password").notNull(),
+  profileImage: varchar("profile_image", { length: 500 }),
+  phone: varchar("phone", { length: 20 }),
+  company: varchar("company", { length: 200 }),
+  jobTitle: varchar("job_title", { length: 150 }),
+  
+  // Membership status
+  membershipTier: varchar("membership_tier", { length: 50 }).default("basic"),
+  membershipStatus: varchar("membership_status", { length: 20 }).default("pending"), // pending, active, suspended, cancelled
+  membershipStartDate: timestamp("membership_start_date"),
+  membershipEndDate: timestamp("membership_end_date"),
+  
+  // Access control
+  isApproved: boolean("is_approved").default(false),
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  
+  // Payment integration
+  stripeCustomerId: varchar("stripe_customer_id", { length: 100 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 100 }),
+  paypalCustomerId: varchar("paypal_customer_id", { length: 100 }),
+  
+  // Multi-Factor Authentication
+  mfaEnabled: boolean("mfa_enabled").default(false),
+  mfaSecret: varchar("mfa_secret", { length: 32 }), // Base32 encoded secret for TOTP
+  mfaBackupCodes: text("mfa_backup_codes").array().default([]), // Array of backup codes
+  preferredMfaMethod: varchar("preferred_mfa_method", { length: 20 }).default("authenticator"), // authenticator, sms, email
+  phoneVerified: boolean("phone_verified").default(false),
+  emailVerified: boolean("email_verified").default(false),
+  lastMfaUsed: timestamp("last_mfa_used"),
+  failedMfaAttempts: integer("failed_mfa_attempts").default(0),
+  mfaLockedUntil: timestamp("mfa_locked_until"),
+  
+  // Access Permissions
+  hasTrainingAccess: boolean("has_training_access").default(false),
+  hasTicketingAccess: boolean("has_ticketing_access").default(false),
+  hasBillingAccess: boolean("has_billing_access").default(false),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
+});
+
+// Membership Tiers/Plans
+export const membershipTiers = pgTable("membership_tiers", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  billingInterval: varchar("billing_interval", { length: 20 }).default("monthly"), // monthly, yearly, lifetime
+  features: jsonb("features"), // JSON array of features
+  maxCourses: integer("max_courses").default(-1), // -1 for unlimited
+  maxSupportTickets: integer("max_support_tickets").default(-1),
+  priority: integer("priority").default(0), // Higher number = higher priority
+  isActive: boolean("is_active").default(true),
+  stripeProductId: varchar("stripe_product_id", { length: 100 }),
+  stripePriceId: varchar("stripe_price_id", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Courses for LMS
+export const courses = pgTable("courses", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  shortDescription: varchar("short_description", { length: 500 }),
+  slug: varchar("slug", { length: 200 }).unique().notNull(),
+  
+  // Content
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  introVideo: varchar("intro_video", { length: 500 }),
+  syllabus: text("syllabus"),
+  
+  // Metadata
+  instructor: varchar("instructor", { length: 100 }).notNull(),
+  instructorBio: text("instructor_bio"),
+  category: varchar("category", { length: 100 }),
+  difficulty: varchar("difficulty", { length: 20 }).default("beginner"), // beginner, intermediate, advanced
+  estimatedHours: integer("estimated_hours").default(0),
+  
+  // Access control
+  requiredTier: varchar("required_tier", { length: 50 }).default("basic"),
+  isPublished: boolean("is_published").default(false),
+  isPremium: boolean("is_premium").default(false),
+  
+  // Pricing (if individual course purchase)
+  price: decimal("price", { precision: 10, scale: 2 }),
+  
+  // SEO
+  metaTitle: varchar("meta_title", { length: 200 }),
+  metaDescription: varchar("meta_description", { length: 500 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Course Modules/Sections
+export const courseModules = pgTable("course_modules", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  orderIndex: integer("order_index").notNull(),
+  isPublished: boolean("is_published").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Course Lessons
+export const courseLessons = pgTable("course_lessons", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("module_id").references(() => courseModules.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  content: text("content"), // Markdown content
+  
+  // Media
+  videoUrl: varchar("video_url", { length: 500 }),
+  videoProvider: varchar("video_provider", { length: 20 }), // youtube, vimeo, self-hosted
+  videoDuration: integer("video_duration"), // in seconds
+  audioUrl: varchar("audio_url", { length: 500 }),
+  attachments: jsonb("attachments"), // Array of file objects
+  
+  // Lesson settings
+  orderIndex: integer("order_index").notNull(),
+  isPreview: boolean("is_preview").default(false), // Free preview lesson
+  isPublished: boolean("is_published").default(true),
+  estimatedMinutes: integer("estimated_minutes").default(0),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Member Course Enrollments
+export const memberEnrollments = pgTable("member_enrollments", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  enrolledAt: timestamp("enrolled_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  progressPercentage: integer("progress_percentage").default(0),
+  certificateIssued: boolean("certificate_issued").default(false),
+  certificateIssuedAt: timestamp("certificate_issued_at"),
+  lastAccessedAt: timestamp("last_accessed_at"),
+});
+
+// Lesson Progress Tracking
+export const lessonProgress = pgTable("lesson_progress", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  lessonId: integer("lesson_id").references(() => courseLessons.id).notNull(),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  watchTimeSeconds: integer("watch_time_seconds").default(0),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Support Tickets
+export const supportTickets = pgTable("support_tickets", {
+  id: serial("id").primaryKey(),
+  ticketNumber: varchar("ticket_number", { length: 20 }).unique().notNull(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  
+  // Ticket content
+  subject: varchar("subject", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  priority: varchar("priority", { length: 20 }).default("medium"), // low, medium, high, urgent
+  status: varchar("status", { length: 20 }).default("open"), // open, in_progress, waiting_response, resolved, closed
+  category: varchar("category", { length: 50 }), // technical, billing, course, general
+  
+  // Assignment
+  assignedTo: integer("assigned_to"), // Admin/support staff ID
+  assignedAt: timestamp("assigned_at"),
+  
+  // JIRA Integration
+  jiraTicketId: varchar("jira_ticket_id", { length: 100 }),
+  jiraUrl: varchar("jira_url", { length: 500 }),
+  
+  // Resolution
+  resolvedAt: timestamp("resolved_at"),
+  resolutionNotes: text("resolution_notes"),
+  
+  // Metadata
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Support Ticket Messages/Replies
+export const ticketMessages = pgTable("ticket_messages", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").references(() => supportTickets.id).notNull(),
+  senderId: integer("sender_id").notNull(), // Member or admin ID
+  senderType: varchar("sender_type", { length: 20 }).notNull(), // member, admin
+  message: text("message").notNull(),
+  attachments: jsonb("attachments"), // Array of file objects
+  isInternal: boolean("is_internal").default(false), // Internal notes not visible to member
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Invoices
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  invoiceNumber: varchar("invoice_number", { length: 50 }).unique().notNull(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  
+  // Invoice details
+  description: text("description"),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }).default("0.00"),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).default("0.00"),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  
+  // Status
+  status: varchar("status", { length: 20 }).default("pending"), // pending, paid, overdue, cancelled
+  dueDate: timestamp("due_date"),
+  paidAt: timestamp("paid_at"),
+  
+  // Payment integration
+  stripeInvoiceId: varchar("stripe_invoice_id", { length: 100 }),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 100 }),
+  paypalOrderId: varchar("paypal_order_id", { length: 100 }),
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  
+  // PDF generation
+  pdfPath: varchar("pdf_path", { length: 500 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Invoice Line Items
+export const invoiceItems = pgTable("invoice_items", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
+  description: varchar("description", { length: 200 }).notNull(),
+  quantity: integer("quantity").default(1),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  courseId: integer("course_id").references(() => courses.id), // If related to course
+  membershipTierId: integer("membership_tier_id").references(() => membershipTiers.id), // If related to membership
+});
+
+// Member Sessions (separate from admin sessions)
+export const memberSessions = pgTable("member_sessions", {
+  id: serial("id").primaryKey(),
+  sessionId: varchar("session_id", { length: 128 }).unique().notNull(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastAccessedAt: timestamp("last_accessed_at").defaultNow(),
+});
+
+// Certificates
+export const certificates = pgTable("certificates", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id").references(() => members.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  certificateNumber: varchar("certificate_number", { length: 50 }).unique().notNull(),
+  issuedAt: timestamp("issued_at").defaultNow(),
+  pdfPath: varchar("pdf_path", { length: 500 }),
+  verificationCode: varchar("verification_code", { length: 100 }).unique(),
+});
+
+// Relations
+export const membersRelations = relations(members, ({ many }) => ({
+  enrollments: many(memberEnrollments),
+  supportTickets: many(supportTickets),
+  invoices: many(invoices),
+  sessions: many(memberSessions),
+  certificates: many(certificates),
+  lessonProgress: many(lessonProgress),
+}));
+
+export const coursesRelations = relations(courses, ({ many }) => ({
+  modules: many(courseModules),
+  enrollments: many(memberEnrollments),
+  certificates: many(certificates),
+}));
+
+export const courseModulesRelations = relations(courseModules, ({ one, many }) => ({
+  course: one(courses, {
+    fields: [courseModules.courseId],
+    references: [courses.id],
+  }),
+  lessons: many(courseLessons),
+}));
+
+export const courseLessonsRelations = relations(courseLessons, ({ one, many }) => ({
+  module: one(courseModules, {
+    fields: [courseLessons.moduleId],
+    references: [courseModules.id],
+  }),
+  progress: many(lessonProgress),
+}));
+
+export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
+  member: one(members, {
+    fields: [supportTickets.memberId],
+    references: [members.id],
+  }),
+  messages: many(ticketMessages),
+}));
+
+export const invoicesRelations = relations(invoices, ({ one, many }) => ({
+  member: one(members, {
+    fields: [invoices.memberId],
+    references: [members.id],
+  }),
+  items: many(invoiceItems),
+}));
+
+// Insert schemas
+export const insertMemberSchema = createInsertSchema(members).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+  membershipStartDate: true,
+  membershipEndDate: true,
+  approvedAt: true,
+});
+
+export const insertCourseSchema = createInsertSchema(courses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({
+  id: true,
+  ticketNumber: true,
+  createdAt: true,
+  updatedAt: true,
+  assignedAt: true,
+  resolvedAt: true,
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  invoiceNumber: true,
+  createdAt: true,
+  updatedAt: true,
+  paidAt: true,
+});
+
+export const insertMembershipTierSchema = createInsertSchema(membershipTiers).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Type exports
+export type Member = typeof members.$inferSelect;
+export type InsertMember = z.infer<typeof insertMemberSchema>;
+export type Course = typeof courses.$inferSelect;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+export type CourseModule = typeof courseModules.$inferSelect;
+export type CourseLesson = typeof courseLessons.$inferSelect;
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type MembershipTier = typeof membershipTiers.$inferSelect;
+export type InsertMembershipTier = z.infer<typeof insertMembershipTierSchema>;
+export type Certificate = typeof certificates.$inferSelect;
+export type MemberEnrollment = typeof memberEnrollments.$inferSelect;
+export type LessonProgress = typeof lessonProgress.$inferSelect;

@@ -1,0 +1,234 @@
+import { sql } from 'drizzle-orm';
+import {
+  pgTable,
+  serial,
+  varchar,
+  text,
+  timestamp,
+  integer,
+  boolean,
+  jsonb,
+  decimal,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
+
+// Enums for ticket system
+export const ticketStatusEnum = pgEnum('ticket_status', [
+  'backlog',
+  'todo', 
+  'in_progress',
+  'review',
+  'testing',
+  'done',
+  'blocked',
+  'cancelled'
+]);
+
+export const ticketPriorityEnum = pgEnum('ticket_priority', [
+  'low',
+  'medium', 
+  'high',
+  'urgent',
+  'critical'
+]);
+
+export const ticketTypeEnum = pgEnum('ticket_type', [
+  'bug',
+  'feature',
+  'improvement',
+  'task',
+  'epic',
+  'story',
+  'spike'
+]);
+
+// Projects table
+export const projects = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  key: varchar('key', { length: 10 }).notNull().unique(), // e.g., "UAI", "PROJ"
+  description: text('description'),
+  clientId: integer('client_id').references(() => clients.id),
+  atlassianProjectId: varchar('atlassian_project_id', { length: 100 }),
+  atlassianProjectKey: varchar('atlassian_project_key', { length: 50 }),
+  isActive: boolean('is_active').default(true),
+  settings: jsonb('settings').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Remove the forward reference - we'll handle self-references differently
+
+// Clients table
+export const clients = pgTable('clients', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }),
+  company: varchar('company', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  address: text('address'),
+  billingRate: decimal('billing_rate', { precision: 10, scale: 2 }),
+  currency: varchar('currency', { length: 3 }).default('USD'),
+  atlassianAccountId: varchar('atlassian_account_id', { length: 100 }),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Tickets table
+export const tickets = pgTable('tickets', {
+  id: serial('id').primaryKey(),
+  key: varchar('key', { length: 20 }).notNull().unique(), // e.g., "UAI-123"
+  title: varchar('title', { length: 500 }).notNull(),
+  description: text('description'),
+  status: ticketStatusEnum('status').default('backlog'),
+  priority: ticketPriorityEnum('priority').default('medium'),
+  type: ticketTypeEnum('type').default('task'),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  assigneeId: integer('assignee_id').references(() => teamMembers.id),
+  reporterId: integer('reporter_id').references(() => teamMembers.id),
+  clientId: integer('client_id').references(() => clients.id),
+  estimatedHours: decimal('estimated_hours', { precision: 10, scale: 2 }),
+  actualHours: decimal('actual_hours', { precision: 10, scale: 2 }).default('0'),
+  billingRate: decimal('billing_rate', { precision: 10, scale: 2 }),
+  storyPoints: integer('story_points'),
+  sprintId: integer('sprint_id').references(() => sprints.id),
+  epicId: integer('epic_id'),
+  parentId: integer('parent_id'),
+  atlassianIssueId: varchar('atlassian_issue_id', { length: 100 }),
+  atlassianIssueKey: varchar('atlassian_issue_key', { length: 50 }),
+  labels: jsonb('labels').default([]),
+  customFields: jsonb('custom_fields').default({}),
+  dueDate: timestamp('due_date'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  resolvedAt: timestamp('resolved_at')
+});
+
+// Team members table
+export const teamMembers = pgTable('team_members', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  firstName: varchar('first_name', { length: 255 }).notNull(),
+  lastName: varchar('last_name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  role: varchar('role', { length: 100 }),
+  department: varchar('department', { length: 100 }),
+  hourlyRate: decimal('hourly_rate', { precision: 10, scale: 2 }),
+  atlassianAccountId: varchar('atlassian_account_id', { length: 100 }),
+  avatarUrl: varchar('avatar_url', { length: 500 }),
+  isActive: boolean('is_active').default(true),
+  permissions: jsonb('permissions').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Time tracking table
+export const timeEntries = pgTable('time_entries', {
+  id: serial('id').primaryKey(),
+  ticketId: integer('ticket_id').references(() => tickets.id).notNull(),
+  memberId: integer('member_id').references(() => teamMembers.id).notNull(),
+  description: text('description'),
+  hoursLogged: decimal('hours_logged', { precision: 10, scale: 2 }).notNull(),
+  billableHours: decimal('billable_hours', { precision: 10, scale: 2 }),
+  billingRate: decimal('billing_rate', { precision: 10, scale: 2 }),
+  workDate: timestamp('work_date').notNull(),
+  startTime: timestamp('start_time'),
+  endTime: timestamp('end_time'),
+  atlassianWorklogId: varchar('atlassian_worklog_id', { length: 100 }),
+  isBillable: boolean('is_billable').default(true),
+  isApproved: boolean('is_approved').default(false),
+  approvedBy: integer('approved_by').references(() => teamMembers.id),
+  approvedAt: timestamp('approved_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Sprints table for Agile/Scrum
+export const sprints = pgTable('sprints', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  goal: text('goal'),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  status: varchar('status', { length: 50 }).default('planned'), // planned, active, completed
+  atlassianSprintId: varchar('atlassian_sprint_id', { length: 100 }),
+  velocity: integer('velocity'),
+  burndownData: jsonb('burndown_data').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Comments/Activity tracking
+export const ticketComments = pgTable('ticket_comments', {
+  id: serial('id').primaryKey(),
+  ticketId: integer('ticket_id').references(() => tickets.id).notNull(),
+  authorId: integer('author_id').references(() => teamMembers.id).notNull(),
+  content: text('content').notNull(),
+  isInternal: boolean('is_internal').default(false),
+  atlassianCommentId: varchar('atlassian_comment_id', { length: 100 }),
+  attachments: jsonb('attachments').default([]),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Kanban board configurations
+export const kanbanBoards = pgTable('kanban_boards', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  columns: jsonb('columns').notNull(), // Array of column configs
+  wipLimits: jsonb('wip_limits').default({}), // WIP limits per column
+  settings: jsonb('settings').default({}),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Atlassian integration settings
+export const atlassianIntegration = pgTable('atlassian_integration', {
+  id: serial('id').primaryKey(),
+  domain: varchar('domain', { length: 255 }).notNull(), // e.g., "yourcompany.atlassian.net"
+  email: varchar('email', { length: 255 }).notNull(),
+  apiToken: varchar('api_token', { length: 500 }), // Encrypted
+  isEnabled: boolean('is_enabled').default(false),
+  lastSyncAt: timestamp('last_sync_at'),
+  syncSettings: jsonb('sync_settings').default({}),
+  webhookSecret: varchar('webhook_secret', { length: 100 }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Insert schemas using drizzle-zod
+export const insertProjectSchema = createInsertSchema(projects);
+export const insertClientSchema = createInsertSchema(clients);
+export const insertTicketSchema = createInsertSchema(tickets);
+export const insertTeamMemberSchema = createInsertSchema(teamMembers);
+export const insertTimeEntrySchema = createInsertSchema(timeEntries);
+export const insertSprintSchema = createInsertSchema(sprints);
+export const insertTicketCommentSchema = createInsertSchema(ticketComments);
+export const insertKanbanBoardSchema = createInsertSchema(kanbanBoards);
+export const insertAtlassianIntegrationSchema = createInsertSchema(atlassianIntegration);
+
+// Types
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Ticket = typeof tickets.$inferSelect;
+export type InsertTicket = z.infer<typeof insertTicketSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TimeEntry = typeof timeEntries.$inferSelect;
+export type InsertTimeEntry = z.infer<typeof insertTimeEntrySchema>;
+export type Sprint = typeof sprints.$inferSelect;
+export type InsertSprint = z.infer<typeof insertSprintSchema>;
+export type TicketComment = typeof ticketComments.$inferSelect;
+export type InsertTicketComment = z.infer<typeof insertTicketCommentSchema>;
+export type KanbanBoard = typeof kanbanBoards.$inferSelect;
+export type InsertKanbanBoard = z.infer<typeof insertKanbanBoardSchema>;
+export type AtlassianIntegration = typeof atlassianIntegration.$inferSelect;
+export type InsertAtlassianIntegration = z.infer<typeof insertAtlassianIntegrationSchema>;

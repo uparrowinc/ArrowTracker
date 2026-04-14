@@ -1,0 +1,438 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+:root {
+  /* Executive Navy Palette - Professional B2B Consulting */
+  /* Background: Charcoal Black #0B0D10 */
+  --background: 220 18% 4%;
+  /* Foreground: Cool White #E8EDF2 */
+  --foreground: 214 25% 93%;
+  /* Surface: Dark Slate #121721 */
+  --muted: 222 26% 10%;
+  /* Muted Text: Silver #A7B3C4 */
+  --muted-foreground: 215 18% 71%;
+  --popover: 222 26% 8%;
+  --popover-foreground: 214 25% 93%;
+  /* Card: Dark Slate #121721 */
+  --card: 222 26% 10%;
+  --card-foreground: 214 25% 93%;
+  /* Border: Subtle slate */
+  --border: 220 15% 18%;
+  --input: 222 26% 12%;
+  /* Primary: Deep Navy #163253 */
+  --primary: 213 57% 21%;
+  --primary-foreground: 214 25% 93%;
+  --primary-light: 213 50% 30%;
+  --primary-dark: 213 60% 15%;
+  /* Secondary: Steel Blue #2C4A6E */
+  --secondary: 213 43% 30%;
+  --secondary-foreground: 214 25% 93%;
+  --secondary-light: 213 40% 38%;
+  --secondary-dark: 213 45% 22%;
+  /* Accent: Executive Bronze #C8A466 */
+  --accent: 40 45% 59%;
+  --accent-foreground: 220 18% 4%;
+  --accent-light: 40 50% 68%;
+  --accent-dark: 40 40% 48%;
+  --cursor-trail: 214 25% 93%;
+  --cursor-trail-glow: 213 57% 40%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 214 25% 93%;
+  --ring: 213 57% 21%;
+  --radius: 0.75rem;
+  --chart-1: 213 57% 21%;
+  --chart-2: 213 43% 30%;
+  --chart-3: 40 45% 59%;
+  --chart-4: 195 40% 35%;
+  --chart-5: 215 18% 50%;
+  
+  /* Professional Navigation & Sidebar */
+  --sidebar-background: 0 0% 2%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 8%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 12%;
+  --sidebar-ring: 0 0% 100%;
+  
+  /* Professional Cursor & Interaction */
+  --cursor-trail: 0 0% 100%;
+  --cursor-trail-glow: 0 0% 60%;
+  
+  /* First-Class Navigation System */
+  --nav-height: 5rem;
+  --nav-background: 0 0% 1%;
+  --nav-border: 0 0% 8%;
+  --nav-item-hover: 0 0% 5%;
+  --nav-item-active: 0 0% 100%;
+  --nav-item-active-fg: 0 0% 0%;
+  
+  /* Professional Typography Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
+  
+  /* Professional Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --space-40: 10rem;
+}
+
+.dark {
+  /* Dark mode colors (these will not be used for now) */
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 70%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --primary-light: 0 0% 20%;
+  --primary-dark: 0 0% 0%;
+  --secondary: 0 0% 0%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-light: 0 0% 20%;
+  --secondary-dark: 0 0% 0%;
+  --accent: 0 0% 100%;
+  --accent-foreground: 0 0% 0%;
+  --accent-light: 0 0% 90%;
+  --accent-dark: 0 0% 80%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 0 0% 80%;
+  --chart-1: 0 0% 0%;
+  --chart-2: 0 0% 20%;
+  --chart-3: 0 0% 40%;
+  --chart-4: 0 0% 60%;
+  --chart-5: 0 0% 80%;
+
+  /* Sidebar colors */
+  --sidebar-background: 0 0% 0%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 20%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 20%;
+  --sidebar-ring: 0 0% 80%;
+  
+  /* Cursor trail colors */
+  --cursor-trail: 0 0% 100%;
+  --cursor-trail-glow: 0 0% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-black text-white;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4rem;
+  }
+  
+  /* Professional scrollbar styling - Executive Navy */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(18, 23, 33, 0.5);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #163253, #2C4A6E);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #1F3D66, #3C5A7E);
+  }
+  
+  /* Corporate Professional Prose Styling - Executive Navy */
+  .prose {
+    --tw-prose-headings: #E8EDF2;
+  }
+  
+  .prose h1 {
+    @apply text-3xl md:text-4xl font-bold leading-tight mb-6;
+    color: #E8EDF2;
+  }
+  
+  .prose h2 {
+    @apply text-2xl md:text-3xl font-semibold leading-snug mt-10 mb-5;
+    color: #E8EDF2;
+  }
+  
+  .prose h3 {
+    @apply text-xl md:text-2xl font-semibold leading-snug mt-8 mb-4;
+    color: #D4CFC8;
+  }
+  
+  .prose h4 {
+    @apply text-lg md:text-xl font-medium leading-snug mt-6 mb-3;
+    color: #C8A466;
+  }
+}
+
+@layer components {
+  .navbar-fixed {
+    @apply fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm shadow-lg transition-all duration-300;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  
+  /* First-Class Professional Navigation */
+  .nav-professional {
+    @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
+    height: 5rem;
+    background: rgba(0, 0, 0, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .nav-professional.scrolled {
+    @apply shadow-2xl;
+    background: rgba(0, 0, 0, 0.99);
+    backdrop-filter: blur(24px);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  .nav-item {
+    @apply relative px-6 py-3 font-medium text-white/80 transition-all duration-200 rounded-lg;
+    letter-spacing: 0.025em;
+  }
+  
+  .nav-item:hover {
+    @apply text-white bg-white/5;
+  }
+  
+  .nav-item.active {
+    @apply text-black bg-white font-semibold;
+  }
+  
+  .nav-item.active::after {
+    content: '';
+    @apply absolute -bottom-px left-1/2 w-3/5 h-0.5 bg-white rounded-full;
+    transform: translateX(-50%);
+  }
+  
+  .logo-professional {
+    @apply text-2xl font-black text-white transition-all duration-300;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, #ffffff, #e5e5e5);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .logo-professional:hover {
+    background: linear-gradient(135deg, #ffffff, #f5f5f5);
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+  
+  /* Enhanced spacing utilities */
+  .section-padding {
+    @apply py-32 px-8;
+  }
+  
+  .container-wide {
+    @apply max-w-7xl mx-auto px-8;
+  }
+  
+  .container-content {
+    @apply max-w-5xl mx-auto px-8;
+  }
+  
+  .container-narrow {
+    @apply max-w-3xl mx-auto px-8;
+  }
+  
+  .page-content {
+    padding-top: 5rem;
+    min-height: 100vh;
+  }
+  
+  /* Executive Navy gradient backgrounds */
+  .gradient-bg-primary {
+    background: linear-gradient(135deg, 
+      rgba(11, 13, 16, 0.98) 0%, 
+      rgba(18, 23, 33, 0.95) 50%, 
+      rgba(22, 50, 83, 0.15) 100%
+    );
+  }
+  
+  .gradient-bg-secondary {
+    background: linear-gradient(135deg, 
+      rgba(22, 50, 83, 0.12) 0%, 
+      rgba(44, 74, 110, 0.08) 100%
+    );
+  }
+  
+  /* Card enhancements */
+  .card-glass {
+    @apply bg-gray-900/50 backdrop-blur-sm border border-gray-800/50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl;
+    transform-origin: center;
+  }
+
+  /* Enhanced cursor trail styles with tech-inspired effects */
+  .cursor-dot {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.15s, height 0.15s, background-color 0.3s;
+    mix-blend-mode: screen;
+  }
+
+  .cursor-trail {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: width 0.1s, height 0.1s, opacity 0.5s;
+    opacity: 0.7;
+    mix-blend-mode: screen;
+  }
+  
+  /* Tech particle - like data bits or circuit nodes */
+  .cursor-trail.tech-particle {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    transform: translate(-50%, -50%) rotate(var(--rotation));
+    background-color: rgba(180, 220, 255, 0.8);
+    box-shadow: 0 0 8px 2px rgba(100, 180, 255, 0.5);
+    animation: pulse 1.5s infinite alternate;
+  }
+  
+  /* Tech dot - like connection points */
+  .cursor-trail.tech-dot {
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 8px 2px rgba(120, 200, 255, 0.7);
+  }
+  
+  /* Tech line - like connections or circuit paths */
+  .cursor-trail.tech-line {
+    width: var(--width);
+    height: 2px;
+    border-radius: 0;
+    transform: translateX(calc(-1 * var(--width) / 2)) rotate(var(--rotation));
+    opacity: 0.6;
+    background: linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.1), 
+      rgba(255, 255, 255, 0.9), 
+      rgba(255, 255, 255, 0.1)
+    );
+  }
+  
+  /* Tech-inspired circuit effect */
+  .cursor-trail.tech-circuit {
+    width: 3px;
+    height: 3px;
+    background-color: rgba(180, 255, 255, 0.7);
+    box-shadow: 0 0 8px 2px rgba(120, 200, 255, 0.6);
+    border-radius: 0;
+    opacity: 0.8;
+  }
+  
+  /* Tech-inspired code effect */
+  .cursor-trail.tech-code {
+    background-color: transparent;
+    font-family: monospace;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Animations for tech-inspired effects */
+  @keyframes pulse {
+    0% { opacity: 0.4; transform: scale(0.9); }
+    100% { opacity: 0.8; transform: scale(1.1); }
+  }
+  
+  /* Hover effect for interactive elements */
+  a:hover, button:hover {
+    cursor: none;
+  }
+}
+
+/* Force dark theme for all dropdown/select/popover components */
+[data-radix-dropdown-menu-content],
+[data-radix-select-content],
+[data-radix-popover-content],
+[data-radix-command-content] {
+  background: rgb(17, 24, 39) !important; /* gray-900 */
+  border-color: rgb(55, 65, 81) !important; /* gray-700 */
+  color: rgb(243, 244, 246) !important; /* gray-100 */
+}
+
+[data-radix-dropdown-menu-item],
+[data-radix-select-item],
+[data-radix-command-item] {
+  background: transparent !important;
+  color: rgb(243, 244, 246) !important; /* gray-100 */
+}
+
+[data-radix-dropdown-menu-item]:hover,
+[data-radix-select-item]:hover,
+[data-radix-command-item]:hover,
+[data-radix-dropdown-menu-item][data-highlighted],
+[data-radix-select-item][data-highlighted],
+[data-radix-command-item][data-highlighted] {
+  background: rgb(55, 65, 81) !important; /* gray-700 */
+  color: rgb(255, 255, 255) !important;
+}
+
+[data-radix-select-trigger],
+[data-radix-dropdown-menu-trigger] {
+  background: rgb(31, 41, 55) !important; /* gray-800 */
+  border-color: rgb(55, 65, 81) !important; /* gray-700 */
+  color: rgb(243, 244, 246) !important; /* gray-100 */
+}

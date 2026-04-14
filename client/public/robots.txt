@@ -1,0 +1,61 @@
+# Robots.txt for ai.uparrowinc.com
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://ai.uparrowinc.com/sitemap.xml
+
+# RSS Feed locations
+Sitemap: https://ai.uparrowinc.com/api/rss
+Sitemap: https://ai.uparrowinc.com/feed
+
+# Allow major search engines full access
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Prevent crawling of admin areas
+User-agent: *
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /api/auth
+Disallow: /api/backup
+Disallow: /login
+
+# Prevent crawling of uploaded/generated content (if sensitive)
+# Allow: /uploads/media
+# Disallow: /uploads/generated
+
+# Prevent crawling of development/test files
+User-agent: *
+Disallow: /*.test.js
+Disallow: /*.spec.js
+Disallow: /test/
+Disallow: /tests/

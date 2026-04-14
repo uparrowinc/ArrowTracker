@@ -1,0 +1,409 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Download, Eye, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface ImageGeneratorProps {
+  onImageGenerated?: (imageUrl: string, imageType: string) => void;
+  blogTitle?: string;
+  blogCategory?: string;
+  blogAuthor?: string;
+}
+
+export const ImageGenerator: React.FC<ImageGeneratorProps> = ({
+  onImageGenerated,
+  blogTitle = '',
+  blogCategory = '',
+  blogAuthor = 'Up Arrow Inc'
+}) => {
+  const [activeTab, setActiveTab] = useState('ai');
+  const [loading, setLoading] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [imageType, setImageType] = useState<string>('');
+  const { toast } = useToast();
+
+  // Blog image state
+  const [blogForm, setBlogForm] = useState({
+    title: blogTitle,
+    subtitle: '',
+    category: blogCategory,
+    author: blogAuthor,
+    date: new Date().toLocaleDateString(),
+    theme: 'gradient' as 'gradient' | 'dark' | 'light'
+  });
+
+  // Social media state
+  const [socialForm, setSocialForm] = useState({
+    title: '',
+    description: '',
+    platform: 'twitter' as 'twitter' | 'facebook' | 'linkedin' | 'instagram'
+  });
+
+  // Text image state
+  const [textForm, setTextForm] = useState({
+    text: '',
+    fontSize: 48,
+    fontColor: '#FFFFFF',
+    backgroundColor: '#4338CA',
+    width: 800,
+    height: 400
+  });
+
+  // QR code state
+  const [qrForm, setQrForm] = useState({
+    data: '',
+    width: 300,
+    height: 300,
+    backgroundColor: '#FFFFFF'
+  });
+
+  // AI image state
+  const [aiForm, setAiForm] = useState({
+    prompt: '',
+    size: '1024x1024' as '1024x1024' | '1792x1024' | '1024x1792',
+    quality: 'standard' as 'standard' | 'hd',
+    style: 'natural' as 'natural' | 'vivid'
+  });
+
+  const generateImage = async (endpoint: string, payload: any, type: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/images/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImage(imageUrl);
+      setImageType(type);
+      
+      if (onImageGenerated) {
+        onImageGenerated(imageUrl, type);
+      }
+
+      toast({
+        title: "Image Generated Successfully",
+        description: `Your ${type} image is ready to use.`
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (generatedImage) {
+      const link = document.createElement('a');
+      link.href = generatedImage;
+      link.download = `generated-${imageType}-${Date.now()}.png`;
+      link.click();
+    }
+  };
+
+  const copyImageUrl = async () => {
+    if (generatedImage) {
+      try {
+        await navigator.clipboard.writeText(generatedImage);
+        toast({
+          title: "URL Copied",
+          description: "Image URL copied to clipboard."
+        });
+      } catch (error) {
+        toast({
+          title: "Copy Failed",
+          description: "Failed to copy URL to clipboard.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  return (
+    <Card className="w-full bg-gray-900 border-gray-700">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-2">
+          🎨 Image Generator
+          <Badge variant="secondary">AI-Powered</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-1 bg-gray-800">
+            <TabsTrigger value="ai" className="text-white">🎨 AI Image Generation</TabsTrigger>
+          </TabsList>
+
+          {/* AI Image Generation Tab */}
+          <TabsContent value="ai" className="space-y-4">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-white">Describe Your Image</Label>
+                <Textarea
+                  value={aiForm.prompt}
+                  onChange={(e) => setAiForm({...aiForm, prompt: e.target.value})}
+                  placeholder="e.g., A majestic white horse running on a sandy beach next to crystal clear water in summer..."
+                  className="bg-gray-800 text-white border-gray-600 min-h-[100px]"
+                  rows={4}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-white">Size</Label>
+                  <Select value={aiForm.size} onValueChange={(value: any) => setAiForm({...aiForm, size: value})}>
+                    <SelectTrigger className="bg-gray-800 text-white border-gray-600">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1024x1024">Square (1024x1024)</SelectItem>
+                      <SelectItem value="1792x1024">Landscape (1792x1024)</SelectItem>
+                      <SelectItem value="1024x1792">Portrait (1024x1792)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-white">Quality</Label>
+                  <Select value={aiForm.quality} onValueChange={(value: any) => setAiForm({...aiForm, quality: value})}>
+                    <SelectTrigger className="bg-gray-800 text-white border-gray-600">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="hd">HD (Higher Cost)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-white">Style</Label>
+                <Select value={aiForm.style} onValueChange={(value: any) => setAiForm({...aiForm, style: value})}>
+                  <SelectTrigger className="bg-gray-800 text-white border-gray-600">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="natural">Natural (More realistic)</SelectItem>
+                    <SelectItem value="vivid">Vivid (More dramatic)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button
+                onClick={() => generateImage('ai-image', aiForm, 'ai-generated')}
+                disabled={loading || !aiForm.prompt.trim()}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Generate AI Image
+              </Button>
+            </div>
+          </TabsContent>
+
+        </Tabs>
+
+          <TabsContent value="social" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-white">Platform</Label>
+                <Select value={socialForm.platform} onValueChange={(value: any) => setSocialForm({...socialForm, platform: value})}>
+                  <SelectTrigger className="bg-gray-800 text-white border-gray-600">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="twitter">Twitter (1200x675)</SelectItem>
+                    <SelectItem value="facebook">Facebook (1200x630)</SelectItem>
+                    <SelectItem value="linkedin">LinkedIn (1200x627)</SelectItem>
+                    <SelectItem value="instagram">Instagram (1080x1080)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-white">Title</Label>
+              <Input
+                value={socialForm.title}
+                onChange={(e) => setSocialForm({...socialForm, title: e.target.value})}
+                placeholder="Social media post title"
+                className="bg-gray-800 text-white border-gray-600"
+              />
+            </div>
+            <div>
+              <Label className="text-white">Description (Optional)</Label>
+              <Textarea
+                value={socialForm.description}
+                onChange={(e) => setSocialForm({...socialForm, description: e.target.value})}
+                placeholder="Brief description for social media"
+                className="bg-gray-800 text-white border-gray-600"
+                rows={2}
+              />
+            </div>
+            <Button
+              onClick={() => generateImage('social-image', socialForm, 'social-media')}
+              disabled={loading || !socialForm.title}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Generate Social Media Image
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="text" className="space-y-4">
+            <div>
+              <Label className="text-white">Text</Label>
+              <Input
+                value={textForm.text}
+                onChange={(e) => setTextForm({...textForm, text: e.target.value})}
+                placeholder="Enter text to display"
+                className="bg-gray-800 text-white border-gray-600"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="text-white">Font Size</Label>
+                <Input
+                  type="number"
+                  value={textForm.fontSize}
+                  onChange={(e) => setTextForm({...textForm, fontSize: parseInt(e.target.value) || 48})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Text Color</Label>
+                <Input
+                  type="color"
+                  value={textForm.fontColor}
+                  onChange={(e) => setTextForm({...textForm, fontColor: e.target.value})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Background</Label>
+                <Input
+                  type="color"
+                  value={textForm.backgroundColor}
+                  onChange={(e) => setTextForm({...textForm, backgroundColor: e.target.value})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+            </div>
+            <Button
+              onClick={() => generateImage('text-image', textForm, 'text-graphic')}
+              disabled={loading || !textForm.text}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Generate Text Image
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="qr" className="space-y-4">
+            <div>
+              <Label className="text-white">Data</Label>
+              <Textarea
+                value={qrForm.data}
+                onChange={(e) => setQrForm({...qrForm, data: e.target.value})}
+                placeholder="Enter URL, text, or vCard data"
+                className="bg-gray-800 text-white border-gray-600"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="text-white">Width</Label>
+                <Input
+                  type="number"
+                  value={qrForm.width}
+                  onChange={(e) => setQrForm({...qrForm, width: parseInt(e.target.value) || 300})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Height</Label>
+                <Input
+                  type="number"
+                  value={qrForm.height}
+                  onChange={(e) => setQrForm({...qrForm, height: parseInt(e.target.value) || 300})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Background</Label>
+                <Input
+                  type="color"
+                  value={qrForm.backgroundColor}
+                  onChange={(e) => setQrForm({...qrForm, backgroundColor: e.target.value})}
+                  className="bg-gray-800 text-white border-gray-600"
+                />
+              </div>
+            </div>
+            <Button
+              onClick={() => generateImage('qr-code', qrForm, 'qr-code')}
+              disabled={loading || !qrForm.data}
+              className="w-full bg-orange-600 hover:bg-orange-700"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Generate QR Code
+            </Button>
+          </TabsContent>
+        </Tabs>
+
+        {generatedImage && (
+          <Card className="mt-6 bg-gray-800 border-gray-600">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center justify-between">
+                Generated Image Preview
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyImageUrl}
+                    className="text-white border-gray-600 hover:bg-gray-700"
+                  >
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy URL
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadImage}
+                    className="text-white border-gray-600 hover:bg-gray-700"
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center">
+                <img
+                  src={generatedImage}
+                  alt="Generated"
+                  className="max-w-full max-h-96 rounded-lg border border-gray-600"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
