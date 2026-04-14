@@ -2,7 +2,6 @@
 import { sqliteDb } from "./db.js";
 
 export function seedDatabase() {
-  // Check if already seeded
   const catCount = sqliteDb.prepare("SELECT COUNT(*) as c FROM blog_categories").get() as any;
   if (catCount.c > 0) {
     console.log("✅ Database already seeded, skipping");
@@ -11,19 +10,13 @@ export function seedDatabase() {
   console.log("🌱 Seeding database with initial data...");
 
   // Blog categories
-  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(
-    1, `Technology`, `technology`, `Articles about technology trends, AI, machine learning, and software development`, `#3B82F6`, `2025-08-05 17:01:55.705742`
-  );
-  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(
-    2, `Security`, `security`, `Cybersecurity insights, penetration testing, and security tools analysis`, `#EF4444`, `2025-08-05 17:01:55.705742`
-  );
-  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(
-    3, `Media`, `media`, `Podcasts, audio content, and multimedia resources`, `#8B5CF6`, `2025-08-05 17:01:55.705742`
-  );
+  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?,?,?,?,?,?)").run(1, 'Technology', 'technology', 'Articles about technology trends, AI, machine learning, and software development', '#3B82F6', '2025-08-05 17:01:55.705742');
+  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?,?,?,?,?,?)").run(2, 'Security', 'security', 'Cybersecurity insights, penetration testing, and security tools analysis', '#EF4444', '2025-08-05 17:01:55.705742');
+  sqliteDb.prepare("INSERT OR REPLACE INTO blog_categories (id, name, slug, description, color, created_at) VALUES (?,?,?,?,?,?)").run(3, 'Media', 'media', 'Podcasts, audio content, and multimedia resources', '#8B5CF6', '2025-08-05 17:01:55.705742');
 
   // Blog posts
   sqliteDb.prepare("INSERT OR REPLACE INTO blog_posts (id, title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title, post_type, category, subcategory, author, published, published_at, scheduled_for, created_at, updated_at, tags, meta_description, reading_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(
-    39, `OWASP ZAP Security Scans for Security Intelligence`, `owasp-zap-automated-security-scans-guide-2025`, `ZAP acts as an automated penetration tester, constantly probing your application for common but critical vulnerabilities`, `# The Value of Automated Security Scans with OWASP ZAP
+    39, 'OWASP ZAP Security Scans for Security Intelligence', 'owasp-zap-automated-security-scans-guide-2025', 'ZAP acts as an automated penetration tester, constantly probing your application for common but critical vulnerabilities', '# The Value of Automated Security Scans with OWASP ZAP
 
 Regularly running security scans is one of the most effective, low-cost ways to improve your web application&amp;amp;amp;#x27;s security posture. By using a free, open-source tool like **OWASP ZAP** (Zed Attack Proxy), you can shift from being reactive to proactive, finding and fixing security holes before attackers exploit them.
 
@@ -47,14 +40,10 @@ The true power of ZAP is unlocked through automation. By integrating it into a *
 ---
 ## Empower Developers with Actionable Insights
 
-ZAP doesn&amp;amp;amp;#x27;t just find problems; it provides detailed reports on what it found, where it found it, and often suggests how to fix it. This gives developers immediate, concrete feedback, allowing them to learn and improve their secure coding practices with every code commit. This transforms security from a separate, stressful audit into a collaborative and integral part of the development process.`,
-    ``, `Up Arrow Inc`, `1`, `2025-06-10 12:37:38`,
-    `2025-07-27 12:38:24.617996`, `2025-07-29 04:03:45.016`, `OWASP, ZAP, Automated, Penetration, Scan, Intelligence`, `OWASP ZAP acts as an automated penetration tester, constantly probing`,
-    2 min read, null, null,
-    ``, ``, ``, `article`, null
+ZAP doesn&amp;amp;amp;#x27;t just find problems; it provides detailed reports on what it found, where it found it, and often suggests how to fix it. This gives developers immediate, concrete feedback, allowing them to learn and improve their secure coding practices with every code commit. This transforms security from a separate, stressful audit into a collaborative and integral part of the development process.', '', 'Up Arrow Inc', '1', '2025-06-10 12:37:38', '2025-07-27 12:38:24.617996', '2025-07-29 04:03:45.016', 'OWASP, ZAP, Automated, Penetration, Scan, Intelligence', 'OWASP ZAP acts as an automated penetration tester, constantly probing', 2, null, null, '', '', '', 'article', null
   );
   sqliteDb.prepare("INSERT OR REPLACE INTO blog_posts (id, title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title, post_type, category, subcategory, author, published, published_at, scheduled_for, created_at, updated_at, tags, meta_description, reading_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(
-    42, `Is Semgroup Security Scanner A Good Choice`, `is-semgroup-security-scanner-a-good-choice`, `Is Semgroup Security Scanner A Good Choice - let’s take a look and find out`, `# Is Semgrep Security Scanner A Good Choice?
+    42, 'Is Semgroup Security Scanner A Good Choice', 'is-semgroup-security-scanner-a-good-choice', 'Is Semgroup Security Scanner A Good Choice - let’s take a look and find out', '# Is Semgrep Security Scanner A Good Choice?
 
 Yes, Semgrep is generally considered a good and highly-regarded security scanner, particularly in the realm of Static Application Security Testing (SAST). Here&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x27;s a breakdown of its strengths and weaknesses based on user reviews and industry analysis:
 
@@ -83,15 +72,11 @@ Yes, Semgrep is generally considered a good and highly-regarded security scanner
 
 **In summary:**
 
-Semgrep is an excellent choice for organizations looking for a fast, customizable, and developer-friendly SAST tool that can be tightly integrated into CI&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x2F;CD. Its ability to create custom rules is a significant advantage for targeting specific code patterns and reducing false positives. However, it&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x27;s important to understand its focused scope and plan for other security tools to achieve comprehensive application security coverage.`,
-    ``, `Up Arrow Inc`, `1`, `2025-07-10 18:01:00`,
-    `2025-07-28 09:46:35.011936`, `2025-07-31 06:14:14.916`, `SAST, DAST, Semgroup,Security Scanner`, `Semgroup Security Scanner for SAST Static Applications `,
-    3 min read, null, null,
-    ``, ``, ``, `article`, null
+Semgrep is an excellent choice for organizations looking for a fast, customizable, and developer-friendly SAST tool that can be tightly integrated into CI&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x2F;CD. Its ability to create custom rules is a significant advantage for targeting specific code patterns and reducing false positives. However, it&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;#x27;s important to understand its focused scope and plan for other security tools to achieve comprehensive application security coverage.', '', 'Up Arrow Inc', '1', '2025-07-10 18:01:00', '2025-07-28 09:46:35.011936', '2025-07-31 06:14:14.916', 'SAST, DAST, Semgroup,Security Scanner', 'Semgroup Security Scanner for SAST Static Applications ', 3, null, null, '', '', '', 'article', null
   );
   sqliteDb.prepare("INSERT OR REPLACE INTO blog_posts (id, title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title, post_type, category, subcategory, author, published, published_at, scheduled_for, created_at, updated_at, tags, meta_description, reading_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(
-    43, `Power-Hungry Brains in Data Centers`, `power-hungry-brains-in-data-centers`, `Power-Hungry Brains
-How AI is Pushing Data Centers and Power Grids to the Brink`, `# Power-Hungry Brains  
+    43, 'Power-Hungry Brains in Data Centers', 'power-hungry-brains-in-data-centers', 'Power-Hungry Brains
+How AI is Pushing Data Centers and Power Grids to the Brink', '# Power-Hungry Brains  
 How AI is Pushing Data Centers and Power Grids to the Brink
 
 ## The Rise of AI and the Surging Demand for Data Centers
@@ -142,14 +127,10 @@ Tech Infrastructure
 Climate Impact  
 Cloud Computing  
 Green Technology  
-`,
-    `/generated-images/generated-ai-generated-1753741338417_1753743980692.png`, `Up Arrow Inc`, `1`, `2025-07-10 22:24:45`,
-    `2025-07-28 22:25:05.5915`, `2025-07-29 03:59:51.599`, ` AI,Data Centers,Sustainability,Power Grid,Tech Infrastructure,Climate Impact,Cloud Computing,Green Technology  `, `Power-Hungry Brains - How AI is Pushing Data Centers and Power Grids to the Brink`,
-    3 min read, null, null,
-    ``, ``, ``, `article`, null
+', '/generated-images/generated-ai-generated-1753741338417_1753743980692.png', 'Up Arrow Inc', '1', '2025-07-10 22:24:45', '2025-07-28 22:25:05.5915', '2025-07-29 03:59:51.599', ' AI,Data Centers,Sustainability,Power Grid,Tech Infrastructure,Climate Impact,Cloud Computing,Green Technology  ', 'Power-Hungry Brains - How AI is Pushing Data Centers and Power Grids to the Brink', 3, null, null, '', '', '', 'article', null
   );
   sqliteDb.prepare("INSERT OR REPLACE INTO blog_posts (id, title, slug, excerpt, content, featured_image, audio_url, audio_duration, audio_title, post_type, category, subcategory, author, published, published_at, scheduled_for, created_at, updated_at, tags, meta_description, reading_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(
-    46, `Query Processing Layer of the Hybrid Search and AI Synthesis System`, `query-processing-layer-of-the-hybrid-search-and-ai-synthesis-system`, `Query routing involves directing the preprocessed query to the most suitable search components (full-text search, pattern matching, database, or semantic search) based on its characteristics, intent, and system state`, `# The New Era of Query Processing: How We Transformed Speed and Accuracy
+    46, 'Query Processing Layer of the Hybrid Search and AI Synthesis System', 'query-processing-layer-of-the-hybrid-search-and-ai-synthesis-system', 'Query routing involves directing the preprocessed query to the most suitable search components (full-text search, pattern matching, database, or semantic search) based on its characteristics, intent, and system state', '# The New Era of Query Processing: How We Transformed Speed and Accuracy
 
 In the fast-moving world of digital experiences, milliseconds matter. Users will not wait for slow responses, and companies cannot afford missed opportunities due to inefficient data systems. That is why our team took a bold step — to completely reimagine how queries are processed.
 
@@ -157,7 +138,7 @@ What started as a technical improvement turned into a transformation that blends
 
 ## Listen to Our Deep Dive Discussion
 
-[audio:Behind_the_Query_How_Up_Arrow_Incs_AI_Unpacks_Your_Toughest_Questions_1753594934106.mp3&title=Behind the Query: How Up Arrow Inc's AI Unpacks Your Toughest Questions&artist=Up Arrow Inc]
+[audio:Behind_the_Query_How_Up_Arrow_Incs_AI_Unpacks_Your_Toughest_Questions_1753594934106.mp3&title=Behind the Query: How Up Arrow Inc''s AI Unpacks Your Toughest Questions&artist=Up Arrow Inc]
 
 ---
 
@@ -239,19 +220,12 @@ For intent classification, fine-tuning BERT rather than adopting zero-shot class
 - **Query Timeouts**: Failover logic ensures that if a semantic search exceeds a latency threshold, the system can gracefully degrade to keyword-based retrieval.
 - **Observability**: Each step in the Query Processing Layer is instrumented with metrics for latency, accuracy, and resource consumption, enabling real-time diagnostics.
 
-By merging precision engineering with robust natural language processing, the Query Processing Layer becomes not just a functional necessity but a competitive advantage in delivering contextually accurate, high-speed AI-driven responses.`,
-    ``, `Up Arrow Inc`, `1`, `2025-07-29 14:51:09`,
-    `2025-07-29 14:55:54.533763`, `2025-07-29 15:42:43.07`, `query processing,rag,search,retrieval,BERT,NER,RoBERTa,DeBERTa,Tokenization`, `Query Processing Layer of the Hybrid Search &amp;amp;amp;amp;amp;amp; AI Synthesis System`,
-    5 min read, null, null,
-    `&#x2F;attached-assets&#x2F;Behind_the_Query_How_Up_Arrow_Incs_AI_Unpacks_Your_Toughest_Questions-1753801404768.mp3`, ``, `Deep Dive - Query Processing Layer of the Hybrid Search and AI Synthesis System`, `podcast`, null
+By merging precision engineering with robust natural language processing, the Query Processing Layer becomes not just a functional necessity but a competitive advantage in delivering contextually accurate, high-speed AI-driven responses.', '', 'Up Arrow Inc', '1', '2025-07-29 14:51:09', '2025-07-29 14:55:54.533763', '2025-07-29 15:42:43.07', 'query processing,rag,search,retrieval,BERT,NER,RoBERTa,DeBERTa,Tokenization', 'Query Processing Layer of the Hybrid Search &amp;amp;amp;amp;amp;amp; AI Synthesis System', 5, null, null, '&#x2F;attached-assets&#x2F;Behind_the_Query_How_Up_Arrow_Incs_AI_Unpacks_Your_Toughest_Questions-1753801404768.mp3', '', 'Deep Dive - Query Processing Layer of the Hybrid Search and AI Synthesis System', 'podcast', null
   );
 
   // Members
   sqliteDb.prepare("INSERT OR REPLACE INTO members (id, email, first_name, last_name, password, phone, company, membership_tier, membership_status, is_approved, has_training_access, has_ticketing_access, has_billing_access, preferred_mfa_method, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(
-    1, `test@uparrowinc.com`, `Test`, `Member`, `$2b$12$3x3PoWpLxpYT1lib0SeJyO5jNtBRFI8iZT2Yl572eSNMyo9.sFhHK`,
-    `555-0123`, `Up Arrow Inc`, `premium`, `active`,
-    1, 1, 1, 1,
-    null, `2025-07-27 09:22:05.351607`, `2025-07-27 09:22:05.351607`
+    1, 'test@uparrowinc.com', 'Test', 'Member', '$2b$12$3x3PoWpLxpYT1lib0SeJyO5jNtBRFI8iZT2Yl572eSNMyo9.sFhHK', '555-0123', 'Up Arrow Inc', 'premium', 'active', 1, 1, 1, 1, null, '2025-07-27 09:22:05.351607', '2025-07-27 09:22:05.351607'
   );
 
   console.log("✅ Database seeded successfully");
