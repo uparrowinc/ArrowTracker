@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim
 
+# Cache bust: force full rebuild
+ARG CACHEBUST=2
+
 WORKDIR /app
 
 # Install build tools needed for native modules (bcrypt, better-sqlite3)
