@@ -3,6 +3,7 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./init-db";
+import { seedDatabase } from "./seed-db";
 
 const app = express();
 app.use(express.json());
@@ -139,6 +140,8 @@ if (process.env.NODE_ENV !== 'test') {
   (async () => {
     // Auto-create all tables on startup (idempotent — safe every run)
     initializeDatabase();
+    // Seed initial data if database is empty
+    seedDatabase();
     const server = await createApp();
     
     // Use Railway's injected PORT env var, fallback to 3000
