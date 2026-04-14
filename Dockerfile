@@ -18,6 +18,9 @@ RUN npm install --legacy-peer-deps
 # Build the application
 RUN npm run build
 
+# Copy server-side JSON data files that are needed at runtime
+RUN cp server/seed-data.json dist/seed-data.json
+
 # Expose port (Railway injects PORT at runtime)
 EXPOSE 3000
 
