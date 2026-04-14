@@ -40,16 +40,21 @@ export interface SocialMediaOptions extends ImageGenerationOptions {
 
 export class ImageGenerator {
   private readonly outputDir: string;
-  private openai: OpenAI;
+  private _openai: OpenAI | null = null;
 
   constructor(outputDir: string = './uploads/generated') {
     this.outputDir = outputDir;
     this.ensureOutputDirectory();
-    
-    // Initialize OpenAI client
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
+  }
+
+  private get openai(): OpenAI {
+    if (!this._openai) {
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY is not set — AI image generation is unavailable');
+      }
+      this._openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    }
+    return this._openai;
   }
 
   private async ensureOutputDirectory(): Promise<void> {
