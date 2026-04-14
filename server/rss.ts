@@ -24,7 +24,7 @@ export class RSSService {
 
       res.set({
         'Content-Type': 'application/rss+xml; charset=UTF-8',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=300'
       });
 
       res.send(rssXML);

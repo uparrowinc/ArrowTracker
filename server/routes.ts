@@ -896,6 +896,7 @@ Disallow: /tests/
   // Blog Categories API
   app.get("/api/blog/categories", async (req: Request, res: Response) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=60');
       // Get predefined categories from simple category service
       const predefinedCategories = simpleCategoryService.getAllCategories();
       const posts = await blogStorage.getAllPosts();
@@ -955,6 +956,7 @@ Disallow: /tests/
   // Blog API Routes
   app.get("/api/blog/posts", async (req: Request, res: Response) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60, stale-while-revalidate=30');
       const published = req.query.published === 'false' ? false : true; // Default to published only
       const category = req.query.category as string;
       const subcategory = req.query.subcategory as string;
@@ -988,6 +990,7 @@ Disallow: /tests/
 
   app.get("/api/blog/posts/:slug", async (req: Request, res: Response) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=60');
       const post = await blogStorage.getPostBySlug(String(req.params.slug));
       if (!post) {
         return res.status(404).json({ message: "Post not found" });

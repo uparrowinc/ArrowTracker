@@ -46,13 +46,18 @@ app.use((req, res, next) => {
   // Serve static assets including RSS logo
   app.use("/static-site", express.static("static-site"));
   
-  // Serve uai-logo.png from root
+  // Serve uai-logo.png from root - long CDN cache
   app.get('/uai-logo.png', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400');
     res.sendFile(path.resolve('uai-logo.png'));
   });
   
-  // Serve generated images
-  app.use("/generated-images", express.static("generated-images"));
+  // Serve generated images - long CDN cache (7 days)
+  app.use("/generated-images", express.static("generated-images", {
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400');
+    }
+  }));
   
   // Serve attached assets (for user uploaded images and audio files)
   // CRITICAL: Must be BEFORE authentication middleware to serve audio files publicly
@@ -71,10 +76,14 @@ app.use((req, res, next) => {
         res.setHeader('Content-Type', 'audio/mp4');
         res.setHeader('Accept-Ranges', 'bytes');
       }
+      // Audio: no-cache to prevent mobile streaming issues
       if (filePath.endsWith('.mp3') || filePath.endsWith('.wav') || filePath.endsWith('.mp4')) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
+      } else {
+        // Images and other assets: long CDN cache (7 days)
+        res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400');
       }
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -98,11 +107,14 @@ app.use((req, res, next) => {
         res.setHeader('Accept-Ranges', 'bytes');
       }
       
-      // CACHE-BUSTING: Force no-cache for audio files to fix mobile spinning issues
+      // Audio: no-cache to prevent mobile streaming issues
       if (path.endsWith('.mp3') || path.endsWith('.wav') || path.endsWith('.mp4') || path.endsWith('.mp4a')) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
+      } else {
+        // Images and other assets: long CDN cache (7 days)
+        res.setHeader('Cache-Control', 'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400');
       }
       
       // Add CORS headers for cross-origin audio requests
