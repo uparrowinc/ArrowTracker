@@ -416,8 +416,23 @@ export function initializeDatabase() {
     );
   `);
 
+  // Create media_uploads table if it doesn't exist
+  sqliteDb.exec(`
+    CREATE TABLE IF NOT EXISTS media_uploads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      filename TEXT NOT NULL,
+      original_name TEXT,
+      mime_type TEXT,
+      size INTEGER,
+      url TEXT NOT NULL,
+      uploaded_by TEXT,
+      created_at INTEGER DEFAULT (unixepoch())
+    );
+  `);
+
   // Run migrations to add columns that may be missing from older databases
   const migrations = [
+    // blog_posts columns
     `ALTER TABLE blog_posts ADD COLUMN audio_url TEXT`,
     `ALTER TABLE blog_posts ADD COLUMN audio_duration TEXT`,
     `ALTER TABLE blog_posts ADD COLUMN audio_title TEXT`,
@@ -427,6 +442,15 @@ export function initializeDatabase() {
     `ALTER TABLE blog_posts ADD COLUMN scheduled_for INTEGER`,
     `ALTER TABLE blog_posts ADD COLUMN seo_title TEXT`,
     `ALTER TABLE blog_posts ADD COLUMN canonical_url TEXT`,
+    // services columns
+    `ALTER TABLE services ADD COLUMN image_url TEXT DEFAULT ''`,
+    `ALTER TABLE services ADD COLUMN link TEXT DEFAULT ''`,
+    // testimonials columns
+    `ALTER TABLE testimonials ADD COLUMN author_name TEXT DEFAULT ''`,
+    `ALTER TABLE testimonials ADD COLUMN author_title TEXT DEFAULT ''`,
+    `ALTER TABLE testimonials ADD COLUMN author_image_url TEXT DEFAULT ''`,
+    // team_members columns
+    `ALTER TABLE team_members ADD COLUMN title TEXT DEFAULT ''`,
   ];
   for (const migration of migrations) {
     try {
