@@ -116,11 +116,11 @@ export function initializeDatabase() {
 
     CREATE TABLE IF NOT EXISTS blog_comments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id INTEGER NOT NULL REFERENCES blog_posts(id),
-      author_name TEXT NOT NULL,
-      author_email TEXT NOT NULL,
+      post_id INTEGER REFERENCES blog_posts(id),
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
       content TEXT NOT NULL,
-      is_approved INTEGER DEFAULT 0,
+      approved INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (unixepoch())
     );
 
@@ -474,7 +474,7 @@ export function initializeDatabase() {
       value TEXT NOT NULL
     );
   `);
-  sqliteDb.exec(`INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('version', '5')`);
+  sqliteDb.exec(`INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('version', '6')`);
 
   console.log("✅ Database tables initialized");
 }
