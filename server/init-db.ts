@@ -93,6 +93,10 @@ export function initializeDatabase() {
       is_featured INTEGER DEFAULT 0,
       views INTEGER DEFAULT 0,
       read_time INTEGER DEFAULT 5,
+      audio_url TEXT,
+      audio_title TEXT,
+      post_type TEXT DEFAULT 'article',
+      reading_time INTEGER DEFAULT 5,
       meta_title TEXT,
       meta_description TEXT,
       published_at INTEGER,
@@ -406,6 +410,24 @@ export function initializeDatabase() {
       created_at INTEGER DEFAULT (unixepoch())
     );
   `);
+
+  // Run migrations to add columns that may be missing from older databases
+  const migrations = [
+    `ALTER TABLE blog_posts ADD COLUMN audio_url TEXT`,
+    `ALTER TABLE blog_posts ADD COLUMN audio_title TEXT`,
+    `ALTER TABLE blog_posts ADD COLUMN post_type TEXT DEFAULT 'article'`,
+    `ALTER TABLE blog_posts ADD COLUMN reading_time INTEGER DEFAULT 5`,
+  ];
+  for (const migration of migrations) {
+    try {
+      sqliteDb.exec(migration);
+    } catch (e: any) {
+      // Column already exists — safe to ignore
+      if (!e.message?.includes('duplicate column name')) {
+        console.warn(`Migration skipped: ${e.message}`);
+      }
+    }
+  }
 
   console.log("✅ Database tables initialized");
 }
