@@ -141,10 +141,8 @@ if (process.env.NODE_ENV !== 'test') {
     initializeDatabase();
     const server = await createApp();
     
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = parseInt(process.env.PORT || "5000", 10);
+    // Serve on PORT env var (set to 89 in Railway), fallback to 89
+    const port = parseInt(process.env.PORT || "89", 10);
     server.listen({
       port,
       host: "0.0.0.0",
