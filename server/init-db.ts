@@ -463,5 +463,14 @@ export function initializeDatabase() {
     }
   }
 
+  // Create schema version tracking table and record current version
+  sqliteDb.exec(`
+    CREATE TABLE IF NOT EXISTS _schema_meta (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+  sqliteDb.exec(`INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('version', '4')`);
+
   console.log("✅ Database tables initialized");
 }
