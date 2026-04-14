@@ -16,7 +16,7 @@ if (!fs.existsSync(dbDir)) {
 }
 
 // Schema version — increment this whenever the schema changes to force a fresh DB
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 // Check if the existing DB has the correct schema version
 // If not, delete it so it gets recreated fresh with all columns
